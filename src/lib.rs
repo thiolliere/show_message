@@ -30,19 +30,12 @@ where M: AsRef<::std::ffi::OsStr>
     use std::io::Write;
 
     let mut child = Command::new("msg")
-        .args(&["*"])
-        .stdin(Stdio::piped())
+        .args(&["*", message])
+        .stdin(Stdio::null())
         .stdout(Stdio::inherit())
         .stderr(Stdio::inherit())
-        .spawn()
+        .output()
         .expect("failed to execute msg command");
-
-    {
-        let stdin = child.stdin.as_mut().expect("failed to get stdin");
-        stdin.write_all(message).expect("failed to write to stdin");
-    }
-
-    child.wait_with_output().expect("failed to wait on child");
 }
 
 #[cfg(any(target_os = "linux", target_os = "dragonfly", target_os = "freebsd", target_os = "openbsd"))]
