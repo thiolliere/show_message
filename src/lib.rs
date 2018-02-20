@@ -5,18 +5,23 @@ use std::ffi::OsStr;
   not(target_os = "freebsd"), not(target_os = "openbsd")))]
 compile_error!("The platform you're compiling for is not supported by show message");
 
-pub trait OkOrMessage {
+pub trait OkOrShow {
     type OkType;
-    fn ok_or_msg(self) -> Self::OkType;
+    type ErrType;
+    fn ok_or_show<F>(self, func: F) -> Self::OkType
+    where F: Fn(Self::ErrType) -> String;
 }
-impl<T, E: ::std::fmt::Display> OkOrMessage for Result<T,E> {
+
+impl<T, E> OkOrShow for Result<T, E> {
     type OkType = T;
-    fn ok_or_msg(self) -> T {
+    type ErrType = E;
+    fn ok_or_show<F>(self, func: F) -> Self::OkType
+    where F: Fn(Self::ErrType) -> String
+    {
         match self {
             Ok(t) => t,
             Err(err) => {
-                show_message(format!("{}", err));
-                println!("{}", err);
+                show(func(err));
                 ::std::process::exit(1);
             },
         }
@@ -24,7 +29,7 @@ impl<T, E: ::std::fmt::Display> OkOrMessage for Result<T,E> {
 }
 
 #[cfg(target_os = "windows")]
-pub fn show_message<M>(message:  M)
+pub fn show<M>(message:  M)
 where M: AsRef<::std::ffi::OsStr>
 {
     use std::io::Write;
@@ -39,7 +44,7 @@ where M: AsRef<::std::ffi::OsStr>
 }
 
 #[cfg(any(target_os = "linux", target_os = "dragonfly", target_os = "freebsd", target_os = "openbsd"))]
-pub fn show_message<M>(message:  M)
+pub fn show<M>(message:  M)
 where M: AsRef<OsStr>
 {
     Command::new("xmessage")
