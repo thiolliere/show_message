@@ -5,6 +5,27 @@ use std::ffi::OsStr;
   not(target_os = "freebsd"), not(target_os = "openbsd")))]
 compile_error!("The platform you're compiling for is not supported by show message");
 
+pub trait SomeOrShow {
+    type SomeType;
+    fn some_or_show<M>(self, M) -> Self::SomeType
+    where M: AsRef<OsStr>;
+}
+
+impl<T> SomeOrShow for Option<T> {
+    type SomeType = T;
+    fn some_or_show<M>(self, msg: M) -> Self::SomeType
+    where M: AsRef<OsStr>
+    {
+        match self {
+            Some(t) => t,
+            None => {
+                show(msg);
+                ::std::process::exit(1);
+            },
+        }
+    }
+}
+
 pub trait OkOrShow {
     type OkType;
     type ErrType;
