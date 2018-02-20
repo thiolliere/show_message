@@ -30,7 +30,7 @@ where M: AsRef<::std::ffi::OsStr>
     use std::io::Write;
 
     let mut child = Command::new("msg")
-        .args(&[OsStr::new("*"), message])
+        .args(&[OsStr::new("*"), message.as_ref()])
         .stdin(Stdio::null())
         .stdout(Stdio::inherit())
         .stderr(Stdio::inherit())
