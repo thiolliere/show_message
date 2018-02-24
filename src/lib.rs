@@ -60,7 +60,7 @@ where M: AsRef<str>
     use user32::MessageBoxA;
     use winapi::winuser::{MB_OK, MB_SYSTEMMODAL};
 
-    let lp_text = CString::new(message).unwrap();
+    let lp_text = CString::new(message.as_ref()).unwrap();
     let lp_caption = CString::new("Message").unwrap();
 
     let window_type = MB_OK | MB_SYSTEMMODAL;
