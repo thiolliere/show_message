@@ -4,7 +4,7 @@ extern crate user32;
 extern crate winapi;
 
 #[cfg(all(not(target_os = "windows"), not(target_os = "linux"), not(target_os = "dragonfly"),
-  not(target_os = "freebsd"), not(target_os = "openbsd")))]
+  not(target_os = "freebsd"), not(target_os = "openbsd"), not(target_os = "macos")))]
 compile_error!("The platform you're compiling for is not supported by show message");
 
 pub trait SomeOrShow {
@@ -75,6 +75,25 @@ where M: AsRef<str>
             window_type
         );
     }
+}
+
+#[cfg(target_os = "macos")]
+pub fn show<M>(message:  M)
+where M: AsRef<str>
+{
+    use std::process::{Command, Stdio};
+
+    println!("{}", message.as_ref());
+
+    let script = format!("display dialog \"{}\" buttons {{\"OK\"}}", message.as_ref());
+
+    Command::new("osascript")
+        .args(&["-e", &script])
+        .stdin(Stdio::null())
+        .stdout(Stdio::inherit())
+        .stderr(Stdio::inherit())
+        .output()
+        .expect("failed to execute osascript command");
 }
 
 #[cfg(any(target_os = "linux", target_os = "dragonfly", target_os = "freebsd", target_os = "openbsd"))]

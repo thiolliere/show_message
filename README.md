@@ -3,7 +3,7 @@ Show_message
 
 cross-platform library to show a message to users using native libs.
 
-use xmessage on Linux, and msg on Windows. Other platforms not supported.
+use xmessage on Linux, msg on Windows, osascript on MacOS. Other platforms not supported.
 
 TODO: no CString unwrap for windows
 
