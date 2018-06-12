@@ -60,6 +60,8 @@ where M: AsRef<str>
     use user32::MessageBoxA;
     use winapi::winuser::{MB_OK, MB_SYSTEMMODAL};
 
+    println!("{}", message.as_ref());
+
     let lp_text = CString::new(message.as_ref()).unwrap();
     let lp_caption = CString::new("Message").unwrap();
 
@@ -80,6 +82,8 @@ pub fn show<M>(message:  M)
 where M: AsRef<str>
 {
     use std::process::{Command, Stdio};
+
+    println!("{}", message.as_ref());
 
     Command::new("xmessage")
         .args(&[message.as_ref()])
