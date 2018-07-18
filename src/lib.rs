@@ -5,7 +5,11 @@ extern crate winapi;
 
 #[cfg(all(not(target_os = "windows"), not(target_os = "linux"), not(target_os = "dragonfly"),
   not(target_os = "freebsd"), not(target_os = "openbsd"), not(target_os = "macos")))]
-compile_error!("The platform you're compiling for is not supported by show message");
+pub fn show<M>(message:  M)
+where M: AsRef<str>
+{
+    println!("{}", message.as_ref());
+}
 
 pub trait UnwrapOrShow: Sized {
     type OkType;
