@@ -7,47 +7,43 @@ extern crate winapi;
   not(target_os = "freebsd"), not(target_os = "openbsd"), not(target_os = "macos")))]
 compile_error!("The platform you're compiling for is not supported by show message");
 
-pub trait SomeOrShow {
-    type SomeType;
-    fn some_or_show<M>(self, M) -> Self::SomeType
-    where M: AsRef<str>;
-}
-
-impl<T> SomeOrShow for Option<T> {
-    type SomeType = T;
-    fn some_or_show<M>(self, msg: M) -> Self::SomeType
-    where M: AsRef<str>
-    {
-        match self {
-            Some(t) => t,
-            None => {
+pub trait UnwrapOrShow: Sized {
+    type OkType;
+    type ErrType;
+    fn convert(self) -> Result<Self::OkType, Self::ErrType>;
+    fn unwrap_or_show(self, msg: impl AsRef<str>) -> Self::OkType {
+        match self.convert() {
+            Ok(ok) => ok,
+            Err(_) => {
                 show(msg);
                 ::std::process::exit(1);
-            },
+            }
+        }
+    }
+    fn unwrap_or_else_show(self, func: impl Fn(Self::ErrType) -> String) -> Self::OkType {
+        match self.convert() {
+            Ok(ok) => ok,
+            Err(err) => {
+                show(func(err));
+                ::std::process::exit(1);
+            }
         }
     }
 }
 
-pub trait OkOrShow {
-    type OkType;
-    type ErrType;
-    fn ok_or_show<F>(self, func: F) -> Self::OkType
-    where F: Fn(Self::ErrType) -> String;
-}
-
-impl<T, E> OkOrShow for Result<T, E> {
+impl<T, E> UnwrapOrShow for Result<T, E> {
     type OkType = T;
     type ErrType = E;
-    fn ok_or_show<F>(self, func: F) -> Self::OkType
-    where F: Fn(Self::ErrType) -> String
-    {
-        match self {
-            Ok(t) => t,
-            Err(err) => {
-                show(func(err));
-                ::std::process::exit(1);
-            },
-        }
+    fn convert(self) -> Result<Self::OkType, Self::ErrType> {
+        self
+    }
+}
+
+impl<T> UnwrapOrShow for Option<T> {
+    type OkType = T;
+    type ErrType = ();
+    fn convert(self) -> Result<Self::OkType, Self::ErrType> {
+        self.ok_or(())
     }
 }
 
